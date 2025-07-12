@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKWATER TERMINAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono:wght@400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #888;
+            overflow-x: hidden;
+            line-height: 1.4;
+        }
+        
+        /* VHS Static Background */
+        .vhs-static {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.15;
+            background: 
+                radial-gradient(circle at 20% 50%, transparent 20%, rgba(120,119,198,0.3) 21%, rgba(120,119,198,0.3) 34%, transparent 35%, transparent),
+                linear-gradient(0deg, transparent 24%, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.05) 26%, transparent 27%, transparent 74%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05) 76%, transparent 77%, transparent);
+            animation: static 0.1s infinite linear;
+        }
+        
+        @keyframes static {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-2px); }
+        }
+        
+        /* CRT Effect */
+        .crt-container {
+            position: relative;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+            filter: contrast(1.1) brightness(1.2);
+        }
+        
+        .crt-container::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent 50%, rgba(0,0,0,0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .crt-container::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+            pointer-events: none;
+            z-index: 999;
+        }
+        
+        /* Main Layout */
+        .terminal-grid {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(90deg, #111 0%, #222 50%, #111 100%);
+            border-bottom: 1px solid #333;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            color: #666;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: flicker 2s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* Navigation */
+        .nav-bar {
+            background: #0a0a0a;
+            border-bottom: 1px solid #333;
+            padding: 10px 20px;
+            position: sticky;
+            top: 59px;
+            z-index: 99;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+        }
+        
+        .nav-tab {
+            background: #111;
+            border: 1px solid #333;
+            border-bottom: none;
+            color: #555;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-tab:hover {
+            background: #222;
+            color: #777;
+        }
+        
+        .nav-tab.active {
+            background: #1a1a1a;
+            color: #888;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        .nav-tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: #333;
+        }
+        
+        .nav-tab.active::after {
+            background: #1a1a1a;
+        }
+        
+        /* Main Content Area */
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            gap: 1px;
+            background: #333;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #0f0f0f;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .sidebar-section {
+            border-bottom: 1px solid #222;
+            padding: 15px;
+        }
+        
+        .sidebar-title {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        
+        .sidebar-content {
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .sidebar-list {
+            list-style: none;
+        }
+        
+        .sidebar-list li {
+            padding: 3px 0;
+            color: #555;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .sidebar-list li:hover {
+            color: #777;
+        }
+        
+        .sidebar-list li::before {
+            content: '> ';
+            color: #444;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tab-content {
+            display: none;
+            flex: 1;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* ASCII Art Section */
+        .ascii-art {
+            background: #000;
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            font-size: 8px;
+            line-height: 1;
+            overflow-x: auto;
+            white-space: pre;
+            color: #444;
+            animation: scan 3s infinite;
+        }
+        
+        @keyframes scan {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 0.9; }
+        }
+        
+        /* Content Sections */
+        .content-section {
+            background: #111;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 10px 15px;
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header:hover {
+            background: #222;
+        }
+        
+        .section-body {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #333 #111;
+        }
+        
+        .section-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .section-body::-webkit-scrollbar-track {
+            background: #111;
+        }
+        
+        .section-body::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        /* Track Lists */
+        .tracklist {
+            list-style: none;
+        }
+        
+        .tracklist li {
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+            color: #555;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .tracklist li:hover {
+            background: #1a1a1a;
+            color: #777;
+        }
+        
+        .track-time {
+            color: #444;
+        }
+        
+        /* Image Gallery */
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .gallery-item {
+            aspect-ratio: 1;
+            background: #222;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-size: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-item:hover {
+            background: #333;
+            color: #666;
+            transform: scale(1.05);
+        }
+        
+        /* Glitch Effects */
+        .glitch {
+            position: relative;
+            animation: glitch 2s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { transform: translateX(0); }
+            10% { transform: translateX(-2px); }
+            20% { transform: translateX(2px); }
+            30% { transform: translateX(-1px); }
+            40% { transform: translateX(1px); }
+            50% { transform: translateX(-2px); }
+            60% { transform: translateX(2px); }
+            70% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
+            90% { transform: translateX(-2px); }
+        }
+        
+        /* Scrolling Text */
+        .scrolling-text {
+            background: #000;
+            border: 1px solid #333;
+            padding: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            position: relative;
+            height: 30px;
+        }
+        
+        .scroll-content {
+            position: absolute;
+            white-space: nowrap;
+            animation: scroll 20s linear infinite;
+            color: #555;
+            font-size: 10px;
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Footer */
+        .footer {
+            background: #111;
+            border-top: 1px solid #333;
+            padding: 15px 20px;
+            text-align: center;
+            color: #444;
+            font-size: 10px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .nav-tab {
+                flex: 1;
+                min-width: 100px;
+            }
+        }
+        
+        /* Buttons */
+        .terminal-button {
+            background: #222;
+            border: 1px solid #444;
+            color: #666;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .terminal-button:hover {
+            background: #333;
+            color: #888;
+            border-color: #666;
+        }
+        
+        /* Links */
+        .terminal-link {
+            color: #666;
+            text-decoration: none;
+            border-bottom: 1px dotted #444;
+            transition: all 0.3s ease;
+        }
+        
+        .terminal-link:hover {
+            color: #888;
+            border-bottom-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="vhs-static"></div>
+    
+    <div class="crt-container">
+        <div class="terminal-grid">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title glitch">BLACKWATER TERMINAL v2.1.7</div>
+            </header>
+            
+            <!-- Navigation -->
+            <nav class="nav-bar">
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="archives">ARCHIVES</button>
+                    <button class="nav-tab" data-tab="transmissions">TRANSMISSIONS</button>
+                    <button class="nav-tab" data-tab="artifacts">ARTIFACTS</button>
+                    <button class="nav-tab" data-tab="fragments">FRAGMENTS</button>
+                    <button class="nav-tab" data-tab="terminal">TERMINAL</button>
+                </div>
+            </nav>
+            
+            <!-- Main Content Wrapper -->
+            <div class="content-wrapper">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">System Status</div>
+                        <div class="sidebar-content">
+                            <ul class="sidebar-list">
+                                <li>Core Temperature: 47°C</li>
+                                <li>Memory Usage: 73.2%</li>
+                                <li>Data Corruption: 12.7%</li>
+                                <li>Signal Strength: -23dB</li>
+                                <li>Uptime: 847:23:09</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Active Channels</div>
+                        <div class="sidebar-content">
+                            <ul class="sidebar-list">
+                                <li>CH.001 - Dark Ambient</li>
+                                <li>CH.007 - Industrial Decay</li>
+                                <li>CH.013 - Static Dreams</li>
+                                <li>CH.021 - Void Signals</li>
+                                <li>CH.088 - Ghost Data</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="sidebar-section">
+                        <div class="sidebar-title">Archive Links</div>
+                        <div class="sidebar-content">
+                            <ul class="sidebar-list">
+                                <li><a href="#" class="terminal-link">Decay Archives</a></li>
+                                <li><a href="#" class="terminal-link">Lost Signals</a></li>
+                                <li><a href="#" class="terminal-link">Digital Ruins</a></li>
+                                <li><a href="#" class="terminal-link">Memory Leaks</a></li>
+                                <li><a href="#" class="terminal-link">Static Garden</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </aside>
+                
+                <!-- Main Content -->
+                <main class="main-content">
+                    <!-- Archives Tab -->
+                    <div class="tab-content active" id="archives">
+                        <div class="ascii-art">
+    ╔══════════════════════════════════════════════════════════════════════════════════════════════╗
+    ║                                   B L A C K W A T E R                                        ║
+    ║                                                                                              ║
+    ║    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
+    ║    ░█▀▀█░█░░░░█▀▀█░▀▀█▀▀░█░░░░█▀▀█░▀▀█▀▀░█▀▀░█▀▀▄░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
+    ║    ░█░░█░█░░░░█▄▄█░░░█░░░█░░░░█▄▄█░░░█░░░█▄▄░█▄▄▀░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
+    ║    ░▀▀▀▀░▀▀▀▀░▀░░▀░░░▀░░░▀▀▀▀░▀░░▀░░░▀░░░▀▀▀░▀░▀▀░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
+    ║    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░    ║
+    ║                              [ DATA ARCHIVAL SYSTEM ]                                       ║
+    ╚══════════════════════════════════════════════════════════════════════════════════════════════╝
+                        </div>
+                        
+                        <div class="scrolling-text">
+                            <div class="scroll-content">ARCHIVE STATUS: OPERATIONAL | DATA INTEGRITY: 87.3% | LAST BACKUP: 2025.07.11_03:42:17 | STORAGE AVAILABLE: 12.7TB</div>
+                        </div>
+                        
+                        <div class="content-section">
+                            <div class="section-header">Recent Archive Entries</div>
+                            <div class="section-body">
+                                <ul class="tracklist">
+                                    <li>2025.07.11 - Decay_Patterns_v3.dat <span class="track-time">847KB</span></li>
+                                    <li>2025.07.10 - Static_Garden_Recordings.wav <span class="track-time">23.2MB</span></li>
+                                    <li>2025.07.09 - Memory_Leak_Analysis.txt <span class="track-time">2.1KB</span></li>
+                                    <li>2025.07.08 - Corrupted_Signal_Log.bin <span class="track-time">156KB</span></li>
+                                    <li>2025.07.07 - Digital_Moss_Growth.json <span class="track-time">4.7KB</span></li>
+                                    <li>2025.07.06 - Phantom_Data_Streams.raw <span class="track-time">78.9MB</span></li>
+                                    <li>2025.07.05 - Terminal_Erosion_Study.pdf <span class="track-time">1.3MB</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="content-section">
+                            <div class="section-header">Archive Gallery</div>
+                            <div class="section-body">
+                                <div class="image-gallery">
+                                    <div class="gallery-item">SCAN_001<br>corrupted</div>
+                                    <div class="gallery-item">SCAN_002<br>partial</div>
+                                    <div class="gallery-item">SCAN_003<br>degraded</div>
+                                    <div class="gallery-item">SCAN_004<br>missing</div>
+                                    <div class="gallery-item">SCAN_005<br>recovered</div>
+                                    <div class="gallery-item">SCAN_006<br>unknown</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Transmissions Tab -->
+                    <div class="tab-content" id="transmissions">
+                        <div class="content-section">
+                            <div class="section-header">Active Transmissions</div>
+                            <div class="section-body">
+                                <ul class="tracklist">
+                                    <li>Void Frequency 001 - Ambient Decay <span class="track-time">28:47</span></li>
+                                    <li>Static Bloom - Industrial Moss <span class="track-time">31:22</span></li>
+                                    <li>Digital Erosion Suite - Part I <span class="track-time">45:11</span></li>
+                                    <li>Memory Leak Sessions - Chapter 3 <span class="track-time">22:33</span></li>
+                                    <li>Terminal Ghost - Phantom Signals <span class="track-time">38:56</span></li>
+                                    <li>Blackwater Drone - Deep Current <span class="track-time">52:14</span></li>
+                                    <li>System Decay - Progressive Failure <span class="track-time">29:08</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="content-section">
+                            <div class="section-header">Signal Analysis</div>
+                            <div class="section-body">
+                                <p>Monitoring 847 active channels across the spectrum. Data corruption detected in channels 13, 27, and 88. Ghost signals reported at frequencies 456.7 Hz and 1247.3 Hz.</p>
+                                <br>
+                                <button class="terminal-button">Analyze</button>
+                                <button class="terminal-button">Filter</button>
+                                <button class="terminal-button">Export</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Artifacts Tab -->
+                    <div class="tab-content" id="artifacts">
+                        <div class="content-section">
+                            <div class="section-header">Digital Artifacts Collection</div>
+                            <div class="section-body">
+                                <p>Recovered fragments from the digital substrate. Each artifact represents a moment of decay, a crystallized failure in the endless stream of data dissolution.</p>
+                                <br>
+                                <ul class="sidebar-list">
+                                    <li>Phantom Memory Block #4471</li>
+                                    <li>Corrupted Boot Sequence 7.23.1</li>
+                                    <li>Ghost Registry Entries (Set 9)</li>
+                                    <li>Orphaned Process Fragments</li>
+                                    <li>Dissolved Bitmap Collections</li>
+                                    <li>Terminal Echo Patterns</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="content-section">
+                            <div class="section-header">Specimen Archive</div>
+                            <div class="section-body">
+                                <div class="image-gallery">
+                                    <div class="gallery-item">SPEC_A1<br>intact</div>
+                                    <div class="gallery-item">SPEC_B7<br>fragmentary</div>
+                                    <div class="gallery-item">SPEC_C3<br>dissolving</div>
+                                    <div class="gallery-item">SPEC_D9<br>phantom</div>
+                                    <div class="gallery-item">SPEC_E2<br>corrupted</div>
+                                    <div class="gallery-item">SPEC_F5<br>ghost</div>
+                                    <div class="gallery-item">SPEC_G8<br>void</div>
+                                    <div class="gallery-item">SPEC_H4<br>recovered</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fragments Tab -->
+                    <div class="tab-content" id="fragments">
+                        <div class="content-section">
+                            <div class="section-header">Memory Fragments</div>
+                            <div class="section-body">
+                                <p>Scattered pieces of digital consciousness, slowly returning to the void from which they emerged. Each fragment carries traces of its former purpose, like moss growing through the cracks of abandoned architecture.</p>
+                                <br>
+                                <div class="ascii-art" style="font-size: 10px; background: #0a0a0a;">
+Fragment_00471.mem:
+...system.core.memory_leak detected...
+...process.ghost.pid_4471 unresponsive...
+...data.stream.corruption_level: 23.7%...
+...terminal.echo: "the water remembers"...
+...stack.overflow in module: decay.dll...
+...undefined.behavior in sector 88...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="content-section">
+                            <div class="section-header">Recovered Text Fragments</div>
+                            <div class="section-body">
+                                <p><em>"The terminal breathes in slow, measured cycles, its phosphorescent glow pulsing like a dying star. Data streams flow like dark water through corroded channels, carrying the dreams of forgotten processes."</em></p>
+                                <br>
+                                <p><em>"In the spaces between bytes, something grows. Digital moss spreads through memory banks, transforming silicon pathways into organic networks of decay and renewal."</em></p>
+                                <br>
+                                <button class="terminal-button">Extract</button>
+                                <button class="terminal-button">Restore</button>
+                                <button class="terminal-button">Archive</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Terminal Tab -->
+                    <div class="tab-content" id="terminal">
+                        <div class="content-section">
+                            <div class="section-header">System Terminal</div>
+                            <div class="section-body">
+                                <div class="ascii-art" style="background: #000; color: #555; font-size: 11px;">
+blackwater@terminal:~$ system_status
+BLACKWATER TERMINAL v2.1.7
+Status: OPERATIONAL
+Uptime: 847:23:09
+Memory: 73.2% (12.3GB / 16.8GB)
+Storage: 87.3% (2.7TB / 3.1TB)
+Temperature: 47°C (Critical: 85°C)
+Data Corruption: 12.7%
+
+blackwater@terminal:~$ list_processes
+PID    NAME                    STATUS      CPU%    MEM%
+001    core.decay.monitor      running     23.1    8.9
+047    static.generator        running     12.7    15.2
+088    ghost.signal.proc       zombie      0.0     4.3
+156    memory.leak.tracker     running     18.9    23.7
+247    digital.moss.growth     sleeping    2.1     7.8
+471    terminal.echo.loop      running     5.4     12.1
+
+blackwater@terminal:~$ _
+                                </div>
+                                <br>
+                                <button class="terminal-button">Execute</button>
+                                <button class="terminal-button">Monitor</button>
+                                <button class="terminal-button">Debug</button>
+                                <button class="terminal-button">Shutdown</button>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+            
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="glitch">BLACKWATER TERMINAL | DATA ARCHAEOLOGY DIVISION | SIGNAL INTEGRITY: 73.2% | CONNECTION STATUS: STABLE</div>
+            </footer>
+        </div>
+    </div>
+    
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.nav-tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+            
+            // Collapsible sections
+            const sectionHeaders = document.querySelectorAll('.section-header');
+            sectionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sectionBody = this.nextElementSibling;
+                    const isVisible = sectionBody.style.display !== 'none';
+                    
+                    sectionBody.style.display = isVisible ? 'none' : 'block';
+                    
+                    // Add collapse indicator
+                    const indicator = this.querySelector('.collapse-indicator') || document.createElement('span');
+                    indicator.className = 'collapse-indicator';
+                    indicator.textContent = isVisible ? '[+]' : '[-]';
+                    if (!this.querySelector('.collapse-indicator')) {
+                        this.appendChild(indicator);
+                    }
+                });
+            });
+            
+            // Random glitch effects
+            setInterval(() => {
+                const glitchElements = document.querySelectorAll('.glitch');
+                glitchElements.forEach(element => {
+                    if (Math.random() < 0.1) {
+                        element.style.transform = `translateX(${Math.random() * 4 - 2}px)`;
+                        setTimeout(() => {
+                            element.style.transform = 'translateX(0)';
+                        }, 100);
+                    }
+                });
+            }, 2000);
+            
+            // Interactive sidebar elements
+            const sidebarItems = document.querySelectorAll('.sidebar-list li');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Simple interaction feedback
+                    this.style.color = '#888';
+                    setTimeout(() => {
+                        this.style.color = '';
+                    }, 200);
+                });
+            });
+            
+            // Gallery item interactions
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            galleryItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Create a simple modal effect
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10000;
+                        font-family: 'Share Tech Mono', monospace;
+                        color: #666;
+                        font-size: 14px;
+                        cursor: pointer;
+                    `;
+                    overlay.textContent = `SCANNING: ${this.textContent}`;
+                    
+                    document.body.appendChild(overlay);
+                    
+                    overlay.addEventListener('click', () => {
+                        document.body.removeChild(overlay);
+                    });
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(overlay)) {
+                            document.body.removeChild(overlay);
+                        }
+                    }, 2000);
+                });
+            });
+            
+            // Terminal button interactions
+            const terminalButtons = document.querySelectorAll('.terminal-button');
+            terminalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Simple feedback
+                    const originalText = this.textContent;
+                    this.textContent = 'PROCESSING...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.disabled = false;
+                    }, 1000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
